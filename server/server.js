@@ -1,7 +1,8 @@
 // import dependencies
 const express = require('express');
 const connectToDb = require('./config/connectTodb');
-const Note = require('./models/note');
+const notesController = require('./controllers/notesController');
+var cors = require('cors');
 
 // load env variables
 require('dotenv').config();
@@ -11,7 +12,12 @@ const app = express();
 
 // config express app
 app.use(express.json());
+app.use(cors());
 
+// var corsOptions = {
+// 	origin: 'http://localhost:3000',
+// 	optionsSuccessStatus: 200  // some legacy browsers (IE11, various SmartTVs) choke on 204
+// };
 
 // connect to database
 connectToDb();
@@ -20,15 +26,8 @@ connectToDb();
 app.listen(process.env.PORT);
 
 // routing
-app.get('/', async (req, res, next) => {
-	res.status(200).json({ history: true });
-});
-
-app.post('/api/notes', async function (req, res, next) {
-	try {
-		  const newNote = await Note.create(req.body);
-		  res.status(201).json({ note: newNote });
-	} catch (err) {
-		  res.status(500).json({ error: err.message });
-	}
-});
+app.post('/api/notes', notesController.createNote);
+app.get('/api/notes', notesController.fetchAllNotes);
+app.get('/api/notes/:id', notesController.fetchNoteById);
+app.put('/api/notes/:id', notesController.updateNote);
+app.delete('/api/notes/:id', notesController.deleteNote);
